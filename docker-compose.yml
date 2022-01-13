@@ -24,30 +24,6 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
 
-  spark-master:
-    image: bde2020/spark-master:3.0.1-hadoop3.2
-    ports:
-      - "8080:8080"
-      - "7077:7077"
-    volumes:
-       - ./work:/home/work
-    environment:
-       - "SPARK_LOCAL_IP=spark-master"
-
-  spark-worker:
-    image: bde2020/spark-worker:3.0.1-hadoop3.2
-
-    depends_on:
-      - spark-master
-    environment:
-      - SPARK_MASTER=spark://spark-master:7077
-      - SPARK_WORKER_CORES=2
-      - SPARK_WORKER_MEMORY=3G
-      - SPARK_DRIVER_MEMORY=2G
-      - SPARK_EXECUTOR_MEMORY=2G
-    volumes:
-       - ./work:/home/work
-
   mongo:
     image: mongo
     restart: always
