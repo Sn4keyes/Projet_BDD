@@ -9,9 +9,7 @@ import sys
 
 BROKER = 'localhost:9092'
 TOPIC = 'crypto5'
-list_crypto = [
-    'bitcoin',
-]
+crypto = "bitcoin"
 
 def clean_json(json, crypto_name):
     json_clean = {
@@ -38,21 +36,19 @@ def clean_json(json, crypto_name):
 
 def producer_bitcoin():
     bitcoin = cg.get_coin_market_chart_by_id(
-                id="bitcoin",
+                id=crypto,
                 tickers=False,
                 vs_currency='usd',
                 include_market_cap=True,
-                days='7'
+                days='0.5'
             )
     clean_bitcoin = clean_json(bitcoin, "BTC")
     return clean_bitcoin
 
 def call_crypto_api():
     json_full = {}
-    
     bitcoin = producer_bitcoin()
     json_full.update(bitcoin)
-
     return json_full
 
 if __name__ == "__main__":
@@ -65,8 +61,10 @@ if __name__ == "__main__":
     cg = CoinGeckoAPI()
     
     # while True:
-    print("########## Send Data To Kafka: OK ##########")
+    print("########## ########## ########## ########## ########## ##########")
+    print("- Send Data To Kafka...")
     json_full = call_crypto_api()
     producer.send(TOPIC, json.dumps(json_full).encode('utf-8'))
     producer.flush()
+    print("- OK")
     # sleep(5)
