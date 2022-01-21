@@ -11,28 +11,35 @@ BROKER = 'localhost:9092'
 TOPIC = 'crypto5'
 crypto = "bitcoin"
 
-def clean_json(json, crypto_name):
-    json_clean = {
+def data_storage(crypto_json, crypto_clean, js_col, crypto_name, js_line, middle_js_line):
+    if crypto_json[js_col] == crypto_json["prices"]:
+        crypto_clean[crypto_name + "_timestamp"] \
+            .extend(crypto_json[js_col][js_line][:middle_js_line])
+        crypto_clean[crypto_name + "_prices"] \
+            .extend(crypto_json[js_col][js_line][middle_js_line:])
+    elif crypto_json[js_col] == crypto_json["market_caps"]:
+        crypto_clean[crypto_name + "_market_cap"] \
+            .extend(crypto_json[js_col][js_line][middle_js_line:])
+    elif crypto_json[js_col] == crypto_json["total_volumes"]:
+        crypto_clean[crypto_name + "_total_vol"] \
+            .extend(crypto_json[js_col][js_line][middle_js_line:])
+
+def clean_json(crypto_json, crypto_name):
+    crypto_clean = {
         crypto_name + "_timestamp": [],
         crypto_name + "_prices": [],
         crypto_name + "_market_cap": [],
         crypto_name + "_total_vol": []
     }
     js_line = 0
-    for js_col in json:
-        middle_js_line = len(json[js_col][js_line]) // 2
-        for i in json[js_col]:
+    for js_col in crypto_json:
+        middle_js_line = len(crypto_json[js_col][js_line]) // 2
+        for i in crypto_json[js_col]:
             if js_line <= 168:
-                if json[js_col] == json["prices"]:
-                    json_clean[crypto_name + "_timestamp"].extend(json[js_col][js_line][:middle_js_line])
-                    json_clean[crypto_name + "_prices"].extend(json[js_col][js_line][middle_js_line:])
-                elif json[js_col] == json["market_caps"]:
-                    json_clean[crypto_name + "_market_cap"].extend(json[js_col][js_line][middle_js_line:])
-                elif json[js_col] == json["total_volumes"]:
-                    json_clean[crypto_name + "_total_vol"].extend(json[js_col][js_line][middle_js_line:])
+                data_storage(crypto_json, crypto_clean, js_col, crypto_name, js_line, middle_js_line)
                 js_line += 1
         js_line = 0
-    return json_clean
+    return crypto_clean
 
 def producer_bitcoin():
     bitcoin = cg.get_coin_market_chart_by_id(
@@ -46,13 +53,12 @@ def producer_bitcoin():
     return clean_bitcoin
 
 def call_crypto_api():
-    json_full = {}
+    crypto_json = {}
     bitcoin = producer_bitcoin()
-    json_full.update(bitcoin)
-    return json_full
+    crypto_json.update(bitcoin)
+    return crypto_json
 
 if __name__ == "__main__":
-    
     try:
         producer = KafkaProducer(bootstrap_servers=BROKER)                                                                         
     except Exception as e:
@@ -62,9 +68,9 @@ if __name__ == "__main__":
     
     # while True:
     print("########## ########## ########## ########## ########## ##########")
-    print("- Send Data To Kafka...")
-    json_full = call_crypto_api()
-    producer.send(TOPIC, json.dumps(json_full).encode('utf-8'))
+    print("- Send Data To Kafka consumer...")
+    cryto_json = call_crypto_api()
+    producer.send(TOPIC, json.dumps(cryto_json).encode('utf-8'))
     producer.flush()
     print("- OK")
     # sleep(5)
