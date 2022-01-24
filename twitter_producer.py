@@ -1,68 +1,53 @@
 #!/usr/bin/python
 
-from pycoingecko import CoinGeckoAPI
 from kafka import KafkaProducer
+import preprocessor as p
+from tweepy import *
+import pandas as pd
 import numpy as np
+import tweepy
 import json
-import time
 import sys
 
 BROKER = 'localhost:9092'
 TOPIC = 'twitter0'
+CONSUMER_KEY = "yKJujkZBJz9kToLpb6HTOuLc8"
+CONSUMER_SECRET = "T9qpssjfGIQ5hHyPBEHSOLICaIbDXfuXkIR46T3T2Fa42dLhkI"
+ACCESS_KEY = "1471777355517632512-XR1CPbOqQhXltAaUSNBQMOFSeWan6R"
+ACCESS_SECRET = "QHAhCCNrmOXAu9i3QFcjp6AuOWzqh8XQvOacznPiugSs5"
 
-def clean_json(json, crypto_name):
-    json_clean = {
-        crypto_name + "_timestamp": [],
-        crypto_name + "_prices": [],
-        crypto_name + "_market_cap": [],
-        crypto_name + "_total_vol": []
-    }
-    js_line = 0
-    for js_col in json:
-        middle_js_line = len(json[js_col][js_line]) // 2
-        for i in json[js_col]:
-            if js_line <= 168:
-                if json[js_col] == json["prices"]:
-                    json_clean[crypto_name + "_timestamp"].extend(json[js_col][js_line][:middle_js_line])
-                    json_clean[crypto_name + "_prices"].extend(json[js_col][js_line][middle_js_line:])
-                elif json[js_col] == json["market_caps"]:
-                    json_clean[crypto_name + "_market_cap"].extend(json[js_col][js_line][middle_js_line:])
-                elif json[js_col] == json["total_volumes"]:
-                    json_clean[crypto_name + "_total_vol"].extend(json[js_col][js_line][middle_js_line:])
-                js_line += 1
-        js_line = 0
-    return json_clean
-
-def producer_binancecoin():
-    binancecoin = cg.get_coin_market_chart_by_id(
-                    id="binancecoin",
-                    vs_currency='usd',
-                    include_market_cap=True,
-                    days='7'
-                )
-    clean_binancecoin = clean_json(binancecoin, "BNB")
-    return clean_binancecoin
-
-def call_crypto_api():
-    json_full = {}
-    
-    bitcoin = producer_binancecoin()
-    json_full.update(bitcoin)
-
-    return json_full
+def call_electricity_api():
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+    api = tweepy.API(auth,wait_on_rate_limit=True)
+    search_words = ["#bitcoin" "#BTC" "#Mining"] # Enter your key words
+    json_create = {"created_at" : [],
+                    "text" : [],
+                    "user_screen_name" : [],
+                    "user_location" : []}
+    for tweet in tweepy.Cursor(api.search_tweets,q=search_words,count=1,
+                            lang="en",
+                            since_id=0).items():
+        json_create["created_at"].insert(-1, tweet.created_at.strftime("%m/%d/%Y"))
+        json_create["text"].insert(-1, tweet.text)
+        json_create["user_screen_name"].insert(-1, tweet.user.screen_name)
+        json_create["user_location"].insert(-1, tweet.user.location)
+    return json_create
 
 if __name__ == "__main__":
-    
     try:
         producer = KafkaProducer(bootstrap_servers=BROKER)                                                                         
     except Exception as e:
         print(f"ERROR --> {e}")
         sys.exit(1)
-    cg = CoinGeckoAPI()
     
     # while True:
-    print("########## Send Data To Kafka: OK ##########")
-    json_full = call_crypto_api()
+    print("########## ########## ########## ########## ########## ##########")
+    print("- Send Data To Kafka consumer...")
+    json_full = call_electricity_api()
+    print(json_full)
     producer.send(TOPIC, json.dumps(json_full).encode('utf-8'))
     producer.flush()
+    print("- OK")
     # sleep(5)
+    print("########## ########## ########## ########## ########## ##########")

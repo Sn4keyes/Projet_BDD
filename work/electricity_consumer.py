@@ -1,6 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 from logging import root
+from os import stat
 from pandas.tseries import offsets
 from kafka import KafkaConsumer
 from pymongo import MongoClient
@@ -9,6 +10,7 @@ import pandas as pd
 import pymongo
 import json
 import time
+import sys
 
 BROKER = 'kafka:9093'
 TOPIC = 'electricity0'
@@ -21,29 +23,52 @@ TOPIC = 'electricity0'
 #         del df['_id']
 #     return df
 
-def post_in_db(df, electricity_coll):
+def post_in_electricity_db(df, electricity_coll):
     post_db = electricity_coll.insert_many(df.to_dict('records'))
 
-def connect_db():
+def restart_electricity_db():
+    client = MongoClient('mongo', port = 27017, username = 'root', password = 'root')
+    electricity_db = client.electricity
+    electricity_coll = electricity_db.electricity_coll
+    electricity_coll.drop()
+    return electricity_db, electricity_coll
+
+def connect_electricity_db():
     client = MongoClient('mongo', port = 27017, username = 'root', password = 'root')
     electricity_db = client.electricity
     electricity_coll = electricity_db.electricity_coll
     return electricity_db, electricity_coll
 
+def check_condition(state):
+    if state == "start":
+        print("- Start :")
+        electricity_db, electricity_coll = connect_electricity_db()
+        print("- Ok")
+    elif state == "restart":
+        print("- Restart :")
+        electricity_db, electricity_coll = connect_electricity_db()
+        print("- Ok")
+    else:
+        print("- Reset :")
+        electricity_db, electricity_coll = restart_electricity_db()
+        print("- Ok")
+    return electricity_db, electricity_coll
+
 if __name__ == "__main__":
+    state = sys.argv[1]
     try:
         print("########## ########## ########## ########## ########## ##########")
-        print("- Creating BDD...")
-        electricity_db, electricity_coll = connect_db()
+        print("- Creating Electricity DB...")
+        electricity_db, electricity_coll = check_condition(state)
         print("- OK")
     except:
-        print("- MongoDB database connection error")
+        print("- MongoDB Electricity database connection error")
     consumer = KafkaConsumer(TOPIC, bootstrap_servers=[BROKER], api_version=(2,6,0))
     for msg in consumer:
-        print("- Awaiting data...")
+        print("- Awaiting Electricity data...")
         df = pd.DataFrame.from_dict(json.loads(msg.value))
         print("- OK")
         print("- DataFrame Pandas :\n")
         print(df)
-        post_in_db(df, electricity_coll)
+        post_in_electricity_db(df, electricity_coll)
         print("########## ########## ########## ########## ########## ##########")

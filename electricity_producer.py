@@ -10,13 +10,13 @@ import sys
 BROKER = 'localhost:9092'
 TOPIC = 'electricity0'
 TOKEN = 'JBolGXLpHpqhxpjeRbVKUt7onZB8bpMS'
-list_code = ["DE","FR","CA-ON"]
+LIST_CODE = ["DE","FR","CA-ON"]
 
 def call_electricity_api():
     myToken = TOKEN
     head = {'auth-token': myToken}
     df = []
-    for i in list_code:
+    for i in LIST_CODE:
         time.sleep(2)
         myUrl = 'https://api.co2signal.com/v1/latest?countryCode=%s' % (i)
         response = requests.get(myUrl, headers=head)
@@ -30,11 +30,12 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"ERROR --> {e}")
         sys.exit(1)
-    
     # while True:
     print("########## ########## ########## ########## ########## ##########")
     print("- Send Data To Kafka consumer...")
     electricity_json = call_electricity_api()
     producer.send(TOPIC, json.dumps(electricity_json).encode('utf-8'))
     producer.flush()
+    print("- OK")
     # sleep(5)
+    print("########## ########## ########## ########## ########## ##########")

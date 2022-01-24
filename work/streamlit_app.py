@@ -7,7 +7,6 @@ import numpy as np
 import sqlite3
 import plotly.express as px
 
-
 NAME_BDD = "crypto.db"
 
 ########## ELECTRICITY ##########
@@ -50,14 +49,15 @@ def display_crypto():
     nb_min = int(df["BTC_prices"].min())
     nb_real_time = int(df["BTC_prices"][id_max])
 
-    min.metric("Minimum", str(nb_min) + " $")
-    moy.metric("Mean", str(nb_moy) + " $")
-    max.metric("Maximum", str(nb_max) + " $")
     real_time.metric("Real Time", str(nb_real_time) + " $")
-    desc.markdown("**This is the Bitcoin value at the moment.\nThe value is refreshed all hours.**")
+    desc.markdown("**This is the Bitcoin value at the moment.\n \
+        The value is refreshed all hours.**")
     crypto_period = st.selectbox(
         'choose a period',
         ('1 Day', '1 Week', '1 Month'))
+    min.metric("Minimum", str(nb_min) + " $")
+    moy.metric("Mean", str(nb_moy) + " $")
+    max.metric("Maximum", str(nb_max) + " $")
     display_good_period(crypto_period)
 
 def display_good_period(crypto_period):

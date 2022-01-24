@@ -1,62 +1,65 @@
 #!/usr/bin/python
 
-from pyspark.sql.types import StructType, StructField, FloatType, IntegerType, StringType
-from pyspark.ml.stat import Correlation
-from pyspark.sql import SparkSession
+from os import stat
 from pandas.tseries import offsets
 from kafka import KafkaConsumer
+import pymongo
 from pymongo import MongoClient
 from datetime import datetime
 import pandas as pd
-import pymongo
 import json
 import time
+import sys
 
 BROKER = 'kafka:9093'
 TOPIC = 'twitter0'
 
-def post_in_bdd(spark_df):
-    spark_df.write.format("mongo").mode("append").option("database","twitter").option("collection", "twitter_col").save()
+def post_in_twitter_db(df, twitter_coll):
+    post_db = twitter_coll.insert_many(df.to_dict('records'))
 
-def spark_connect():
-    spark = SparkSession    \
-            .builder    \
-            .master('local')    \
-            .appName('Crypto')  \
-            .config("spark.mongodb.input.uri", "mongodb://root:root@mongo:27017/crypto.*?authSource=admin")  \
-            .config("spark.mongodb.output.uri", "mongodb://root:root@mongo:27017/crypto.*?authSource=admin") \
-            .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:3.0.0") \
-            .config("spark-jars-packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.1")  \
-            .getOrCreate()
-    spark.sparkContext
-    return spark
+def restart_twitter_db():
+    client = MongoClient('mongo', 27017, username = 'root', password = 'root')
+    twitter_db = client.twitter
+    twitter_coll = twitter_db.twitter_coll
+    twitter_coll.drop()
+    return twitter_db, twitter_coll
+
+def connect_twitter_db():
+    client = MongoClient('mongo', 27017, username = 'root', password = 'root')
+    twitter_db = client.twitter
+    twitter_coll = twitter_db.twitter_coll
+    return twitter_db, twitter_coll
+
+def check_condition(state):
+    if state == "start":
+        print("- Start :")
+        twitter_db, twitter_coll = connect_twitter_db()
+        print("- Ok")
+    elif state == "restart":
+        print("- Restart :")
+        twitter_db, twitter_coll = connect_twitter_db()
+        print("- Ok")
+    else:
+        print("- Reset :")
+        twitter_db, twitter_coll = restart_twitter_db()
+        print("- Ok")
+    return twitter_db, twitter_coll
 
 if __name__ == "__main__":
-
+    state = sys.argv[1]
     try:
-        client = MongoClient('mongo', 27017, username = 'root', password = 'root')
-        db_crypto = client.crypto
-        crypto_col = db_crypto.crypto_col
-        calcul_col = db_crypto.calcul_col
-        crypto_col.drop()
-        calcul_col.drop()
-        print("########## Création de la base de données ##########")
+        print("########## ########## ########## ########## ########## ##########")
+        print("- Creating Twitter DB...")
+        twitter_db, twitter_coll = check_condition(state)
+        print("- OK")
     except:
-        print("Erreur de connexion à MongoDB")
+        print("- MongoDB Twitter database connection error")
     consumer = KafkaConsumer(TOPIC, bootstrap_servers=[BROKER], api_version=(2,6,0))
-    spark = spark_connect()
     for msg in consumer:
-        print("########## Received Data From Producer : OK ##########")
+        print("- Awaiting Twitter data...")
         df = pd.DataFrame.from_dict(json.loads(msg.value))
-        print("\n########## DataFrame Pandas : ##########\n")
+        print("- OK")
+        print("- DataFrame Pandas :\n")
         print(df)
-        print("\n########## Minimum : ##########")
-        print(df["BNB_prices"].min())
-        print("\n########## Maximum : ##########")
-        print(df["BNB_prices"].max())
-        print("\n########## Average : ##########")
-        print(df["BNB_prices"].mean())
-        spark_df = spark.createDataFrame(df)
-        post_in_bdd(spark_df)
-        print("\n########## DataFrame Spark : ##########\n")
-        spark_df.show(5, False)
+        post_in_twitter_db(df, twitter_coll)
+        print("########## ########## ########## ########## ########## ##########")
