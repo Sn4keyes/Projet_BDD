@@ -11,10 +11,10 @@ import sys
 
 BROKER = 'localhost:9092'
 TOPIC = 'twitter0'
-CONSUMER_KEY = "yKJujkZBJz9kToLpb6HTOuLc8"
-CONSUMER_SECRET = "T9qpssjfGIQ5hHyPBEHSOLICaIbDXfuXkIR46T3T2Fa42dLhkI"
-ACCESS_KEY = "1471777355517632512-XR1CPbOqQhXltAaUSNBQMOFSeWan6R"
-ACCESS_SECRET = "QHAhCCNrmOXAu9i3QFcjp6AuOWzqh8XQvOacznPiugSs5"
+CONSUMER_KEY = "your consumer key"
+CONSUMER_SECRET = "your consumer secret"
+ACCESS_KEY = "your access key"
+ACCESS_SECRET = "your access secret"
 
 def call_electricity_api():
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
