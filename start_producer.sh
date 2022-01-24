@@ -1,5 +1,5 @@
 #!/bin/sh
 
-python electricity_producer.py &
-python twitter_producer.py &
-python crypto_pproducer.py &
+python src/electricity_producer.py &
+python src/twitter_producer.py &
+python src/crypto_pproducer.py &

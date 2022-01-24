@@ -11,4 +11,4 @@ COPY ../streamlit/requirements.txt ./
 RUN pip3 install -r requirements.txt
 
 # Run command
-CMD ["streamlit","run", "streamlit_app.py"]
+CMD ["streamlit","run", "front/streamlit_app.py"]

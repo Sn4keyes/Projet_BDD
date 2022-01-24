@@ -1,5 +1,5 @@
 #!/bin/sh
 
-python electricity_consumer.py  start &
-python twitter_consumer.py start &
-python crypto_consumer.py start &
+python src/electricity_consumer.py  start &
+python src/twitter_consumer.py start &
+python src/crypto_consumer.py start &

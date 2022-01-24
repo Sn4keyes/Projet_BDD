@@ -7,7 +7,6 @@ from kafka import KafkaConsumer
 from pymongo import MongoClient
 from datetime import datetime
 import pandas as pd
-import pymongo
 import json
 import time
 import sys

@@ -8,7 +8,7 @@ import time
 import sys
 
 BROKER = 'localhost:9092'
-TOPIC = 'crypto5'
+TOPIC = 'crypto6'
 crypto = "bitcoin"
 
 def data_storage(crypto_json, crypto_clean, js_col, crypto_name, js_line, middle_js_line):
