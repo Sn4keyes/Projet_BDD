@@ -7,7 +7,7 @@
   
 ### Installation:
 
-Here is the root of our project, to launch the project and be able to launch everything else you have to type the following command:
+Here is the **root** of our project, to launch the project and be able to launch everything else you have to type the following command:
 
 - If you have never started the project:
 
@@ -17,12 +17,12 @@ Here is the root of our project, to launch the project and be able to launch eve
 
 > docker-compose up -d
 
-After installing all packages and launching all images, you should have 6 images running on your docker container.
+After installing all packages and launching all images, you should have 6 images running on your **docker container**.
 
 ### Run project:
 
 To launch the project you will have to run 2 scripts. 1 on the root of the project and 1 on the docker image of pyspark_notebook.
-- Connect to the docker image of pyspark_notebook on a terminal at the root of the project:
+- Connect to the docker image of **pyspark_notebook** on a terminal at the root of the project:
 
 > docker exec -it pyspark_notebook bash
 
@@ -32,22 +32,22 @@ To launch the project you will have to run 2 scripts. 1 on the root of the proje
 
 #### Consumer part:
 
-You have the choice to launch the consumers of our project in 3 different ways. Start, Restart, Reset.
-- With Start you will launch the project under normal circumstances:
+You have the choice to launch the consumers of our project in 3 different ways. **Start**, **Restart**, **Reset**.
+- With **Start** you will launch the project under normal circumstances:
 
 > ./start.sh
 
-- With Restart you will restart the project when there is an error or problem:
+- With **Restart** you will restart the project when there is an error or problem:
 
 > ./restart.sh
 
-- With Reset you will start the project by deleting all the data saved so far:
+- With **Reset** you will start the project by deleting all the data saved so far:
 
 > ./reset.sh
 
 #### Producer part:
 
-Get to the root of the project.
+Get to the **root** of the project.
 
 - Run the producer script:
 
