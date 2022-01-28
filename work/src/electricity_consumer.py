@@ -25,7 +25,7 @@ TOPIC = 'electricity0'
 def post_in_electricity_db(df, electricity_coll):
     post_db = electricity_coll.insert_many(df.to_dict('records'))
 
-def restart_electricity_db():
+def reset_electricity_db():
     client = MongoClient('mongo', port = 27017, username = 'root', password = 'root')
     electricity_db = client.electricity
     electricity_coll = electricity_db.electricity_coll
@@ -49,7 +49,7 @@ def check_condition(state):
         print("- Ok")
     else:
         print("- Reset :")
-        electricity_db, electricity_coll = restart_electricity_db()
+        electricity_db, electricity_coll = reset_electricity_db()
         print("- Ok")
     return electricity_db, electricity_coll
 

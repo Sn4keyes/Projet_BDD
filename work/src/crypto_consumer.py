@@ -11,12 +11,12 @@ import time
 import sys
 
 BROKER = 'kafka:9093'
-TOPIC = 'crypto6'
+TOPIC = 'crypto7'
 NAME_BDD = "crypto.db"
 
 def post_in_bdd(df, conn):
     print("\n- Post in BDD...")
-    df.to_sql("bitcoin", conn, if_exists="replace")
+    df.to_sql("bitcoin", conn, if_exists="append")
     pd.read_sql_query("select * from bitcoin;", conn)
     print("- OK")
 
@@ -87,8 +87,8 @@ if __name__ == "__main__":
         print("- Awaiting Crypto data...")
         df = pd.DataFrame.from_dict(json.loads(msg.value))
         print("- OK")
-        print("- DataFrame Pandas :\n")
-        print(df)
+        # print("- DataFrame Pandas :\n")
+        # # print(df)
         post_in_bdd(df, conn)
         read_in_bdd(conn)
         print("########## ########## ########## ########## ########## ##########")

@@ -1,5 +1,4 @@
 version: '2'
-
 services:
 
   zookeeper:
@@ -23,7 +22,7 @@ services:
       KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-
+  
   mongo:
     image: mongo
     restart: always
@@ -32,7 +31,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
-
+ 
   mongo-express:
     image: mongo-express
     restart: always
